@@ -1,0 +1,154 @@
+import React from 'react';
+import { AlertTriangle, Building2, Menu, RefreshCw, Sparkles, Home, Search, WifiOff, Activity } from 'lucide-react';
+import CurrencyFormatter from './CurrencyFormatter';
+
+import { getRiskLevel } from '../utils/riskScoring';
+
+export default function Header({
+  currentEal = 18400000,
+  riskScore = 70,
+  onSimulateEvent,
+  onReset,
+  isSimulating = false,
+  isOnline = true,
+  onToggleNav,
+  onGoToLanding,
+  onNavigate,
+  onOpenCommandPalette,
+}) {
+  const riskInfo = getRiskLevel(riskScore);
+  const isMac = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform || navigator.userAgent || '');
+  const shortcutKey = isMac ? '⌘K' : 'Ctrl+K';
+
+  return (
+    <header className="h-16 bg-white border-b border-slate-200 px-3 sm:px-4 md:px-6 flex items-center justify-between sticky top-0 z-30 shadow-xs gap-2 sm:gap-3">
+      {/* Left: Mobile menu + Breadcrumbs/Organization context */}
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+        <button
+          onClick={onToggleNav}
+          aria-label="Open navigation menu"
+          className="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 border border-slate-200 transition-colors lg:hidden shrink-0"
+        >
+          <Menu className="w-4 h-4" />
+        </button>
+
+        {/* Home / Landing button & Quick Links */}
+        {onGoToLanding && (
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              onClick={() => onGoToLanding('overview')}
+              className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 transition-colors shrink-0"
+              title="Return to Product Overview"
+            >
+              <Home className="w-3.5 h-3.5 text-slate-500" />
+              <span className="hidden md:inline font-mono">Overview</span>
+            </button>
+            <div className="hidden lg:flex items-center gap-1 pl-1.5 border-l border-slate-200 text-xs font-mono">
+              <button
+                onClick={() => onGoToLanding('pipeline')}
+                className="px-2 py-1 rounded text-slate-600 hover:text-teal-900 hover:bg-slate-100 transition-colors cursor-pointer font-medium"
+                title="View 6-Stage Quantitative Decision Pipeline"
+              >
+                Methodology
+              </button>
+              <button
+                onClick={() => onNavigate ? onNavigate('monte_carlo') : onGoToLanding('sandbox')}
+                className="px-2 py-1 rounded text-slate-600 hover:text-teal-900 hover:bg-slate-100 transition-colors cursor-pointer font-medium"
+                title="Run Live Monte Carlo Loss Simulation"
+              >
+                Live Simulation
+              </button>
+              <button
+                onClick={() => onGoToLanding('features')}
+                className="px-2 py-1 rounded text-slate-600 hover:text-teal-900 hover:bg-slate-100 transition-colors cursor-pointer font-medium"
+                title="Explore Cyber-Quant Platform Capabilities"
+              >
+                Capabilities
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Command Palette Trigger */}
+        {onOpenCommandPalette && (
+          <button
+            onClick={onOpenCommandPalette}
+            className="hidden md:flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-mono text-slate-500 hover:text-slate-800 hover:bg-slate-100 border border-slate-200 transition-all shadow-2xs shrink-0"
+            title={`Open Command Palette (${shortcutKey})`}
+          >
+            <Search className="w-3.5 h-3.5 text-teal-700" />
+            <span>Search…</span>
+            <kbd className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-600 font-bold">
+              {shortcutKey}
+            </kbd>
+          </button>
+        )}
+
+        {/* Organization pill */}
+        <div className="flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 min-w-0">
+          <div className="w-5 h-5 rounded bg-teal-50 border border-teal-200 flex items-center justify-center shrink-0">
+            <Building2 className="w-3 h-3 text-teal-700" />
+          </div>
+          <span className="text-xs font-bold text-slate-800 truncate">FinTrust Bank</span>
+          {isOnline ? (
+            <span className="hidden xl:inline-flex items-center gap-1 text-[10px] text-teal-800 font-mono bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full font-bold shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-teal-600 animate-pulse" />
+              EVENT-DRIVEN TELEMETRY
+            </span>
+          ) : (
+            <span className="hidden xl:inline-flex items-center gap-1 text-[10px] text-amber-800 font-mono bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full font-bold shrink-0" title="Running in high-precision local fallback engine">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+              LOCAL SIMULATION
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Right: Live EAL Ticker + Action Buttons */}
+      <div className="flex items-center gap-2 sm:gap-2.5 md:gap-3 shrink-0">
+        <div className="hidden sm:flex items-center gap-3 pl-3.5 pr-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200">
+          <div className="text-right">
+            <div className="text-[10px] font-mono text-slate-500 uppercase font-bold tracking-wider">Enterprise EAL</div>
+            <div className="flex items-center justify-end gap-2 mt-0.5">
+              <span className="text-[13px] font-mono font-bold text-rose-600">
+                <CurrencyFormatter value={currentEal} />
+              </span>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-bold border ${
+                riskInfo.isCritical 
+                  ? 'bg-rose-50 text-rose-700 border-rose-200' 
+                  : 'bg-amber-50 text-amber-800 border-amber-200'
+              }`}>
+                {riskScore}/100 · {riskInfo.level}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Primary Action Button */}
+        <button
+          onClick={onSimulateEvent}
+          disabled={isSimulating}
+          className="btn btn-primary text-xs shadow-sm px-2.5 sm:px-3 py-1.5"
+          title="Inject real-time security signal (threat detection or automated SOAR remediation) and recalculate live FAIR risk"
+        >
+          {isSimulating ? (
+            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <Sparkles className="w-3.5 h-3.5" />
+          )}
+          <span className="hidden sm:inline">{isSimulating ? 'Recalculating…' : 'Simulate Telemetry Signal'}</span>
+          <span className="sm:hidden">{isSimulating ? '…' : 'Simulate'}</span>
+        </button>
+
+        <button
+          onClick={onReset}
+          aria-label="Reset to initial seed state"
+          className="btn btn-secondary btn-icon text-slate-500 hover:text-slate-800 p-2"
+          title="Reset back to initial FinTrust baseline"
+        >
+          <RefreshCw className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </header>
+  );
+}
